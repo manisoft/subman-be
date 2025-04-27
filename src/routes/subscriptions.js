@@ -34,11 +34,27 @@ router.post(
   [
     body('name').notEmpty(),
     body('price').isNumeric(),
-    body('billing_cycle').isIn(['weekly', 'biweekly', 'monthly', 'quarterly', 'yearly']),
+    // Accept any string for billing_cycle, we'll validate manually
+    body('billing_cycle').isString(),
     body('category').notEmpty(),
     body('next_billing_date').isISO8601(),
   ],
   async (req, res) => {
+    // Normalize billing_cycle to lowercase before validation
+    if (req.body.billing_cycle) {
+      req.body.billing_cycle = req.body.billing_cycle.toLowerCase();
+    }
+    // Now validate against allowed values
+    const allowedCycles = ['weekly', 'biweekly', 'monthly', 'quarterly', 'yearly'];
+    if (!allowedCycles.includes(req.body.billing_cycle)) {
+      return res.status(400).json({ errors: [{
+        type: 'field',
+        value: req.body.billing_cycle,
+        msg: 'Invalid value',
+        path: 'billing_cycle',
+        location: 'body',
+      }] });
+    }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -73,11 +89,27 @@ router.put(
   [
     body('name').notEmpty(),
     body('price').isNumeric(),
-    body('billing_cycle').isIn(['weekly', 'biweekly', 'monthly', 'quarterly', 'yearly']),
+    // Accept any string for billing_cycle, we'll validate manually
+    body('billing_cycle').isString(),
     body('category').notEmpty(),
     body('next_billing_date').isISO8601(),
   ],
   async (req, res) => {
+    // Normalize billing_cycle to lowercase before validation
+    if (req.body.billing_cycle) {
+      req.body.billing_cycle = req.body.billing_cycle.toLowerCase();
+    }
+    // Now validate against allowed values
+    const allowedCycles = ['weekly', 'biweekly', 'monthly', 'quarterly', 'yearly'];
+    if (!allowedCycles.includes(req.body.billing_cycle)) {
+      return res.status(400).json({ errors: [{
+        type: 'field',
+        value: req.body.billing_cycle,
+        msg: 'Invalid value',
+        path: 'billing_cycle',
+        location: 'body',
+      }] });
+    }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
