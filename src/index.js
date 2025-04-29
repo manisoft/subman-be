@@ -22,6 +22,7 @@ const pushNotificationRoutes = require('./routes/pushNotifications');
 const categoriesRoutes = require('./routes/categories');
 const pagesRoutes = require('./routes/pages');
 const versionRoutes = require('./routes/version');
+const adminRoutes = require('./routes/admin');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
@@ -31,6 +32,7 @@ app.use('/api/push', pushNotificationRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/pages', pagesRoutes);
 app.use('/api/version', versionRoutes);
+app.use('/api/admin', adminRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
