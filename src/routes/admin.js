@@ -102,4 +102,25 @@ router.put('/version-history', authenticateToken, requireAdmin, async (req, res)
   }
 });
 
+// Analytics endpoints
+router.get('/analytics/total-users', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const [[{ total }]] = await db.query('SELECT COUNT(*) as total FROM users');
+    res.json({ total });
+  } catch (e) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.get('/analytics/last-7-days-users', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const [[{ total }]] = await db.query(
+      'SELECT COUNT(*) as total FROM users WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)'
+    );
+    res.json({ total });
+  } catch (e) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;
