@@ -1,4 +1,5 @@
 const pool = require('../db');
+const { v4: uuidv4 } = require('uuid');
 
 const getAllPopularServices = async () => {
   const [rows] = await pool.query('SELECT * FROM popular_services');
@@ -11,10 +12,11 @@ const getPopularServiceById = async (id) => {
 };
 
 const addPopularService = async (service) => {
-  const { name, logo, color, categories } = service;
+  const { name, logo, color, categories, version } = service;
+  const id = uuidv4();
   await pool.query(
-    'INSERT INTO popular_services (name, logo, color, categories) VALUES (?, ?, ?, ?)',
-    [name, logo, color, categories]
+    'INSERT INTO popular_services (id, name, logo, color, categories, version) VALUES (?, ?, ?, ?, ?, ?)',
+    [id, name, logo, color, categories, version || null]
   );
 };
 
