@@ -22,7 +22,7 @@ app.get('/api/health', (req, res) => {
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: 'http://api.subman.org/api/auth/google/callback'
+  callbackURL: 'https://api.subman.org/api/auth/google/callback'
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     // Find or create user
