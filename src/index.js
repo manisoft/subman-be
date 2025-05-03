@@ -22,7 +22,7 @@ app.get('/api/health', (req, res) => {
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: '/api/auth/google/callback'
+  callbackURL: 'https://subman-be.onrender.com/api/auth/google/callback'
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     // Find or create user
@@ -48,7 +48,7 @@ passport.use(new GoogleStrategy({
 
 app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-app.get('/api/auth/google/callback', passport.authenticate('google', { session: false, failureRedirect: '/auth?error=google' }),
+app.get(callbackURL, passport.authenticate('google', { session: false, failureRedirect: '/auth?error=google' }),
   (req, res) => {
     const token = jwt.sign({ id: req.user.id, email: req.user.email, name: req.user.name, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth?token=${token}`);
