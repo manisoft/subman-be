@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { getAllCurrencies } = require('../utils/currencyRates');
 
 // Middleware to authenticate user
 function authenticateToken(req, res, next) {
@@ -64,6 +65,26 @@ router.put('/profile', authenticateToken, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Get/set user default currency
+router.get('/currency', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const [rows] = await db.query('SELECT default_currency FROM users WHERE id = ?', [userId]);
+  res.json({ currency: rows[0]?.default_currency || 'USD' });
+});
+
+router.put('/currency', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const { currency } = req.body;
+  await db.query('UPDATE users SET default_currency = ? WHERE id = ?', [currency, userId]);
+  res.json({ success: true });
+});
+
+// Get all supported currencies and rates
+router.get('/currencies', async (req, res) => {
+  const currencies = await getAllCurrencies();
+  res.json(currencies);
 });
 
 module.exports = router;
