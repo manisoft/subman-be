@@ -38,6 +38,7 @@ router.post(
     body('billing_cycle').isString(),
     body('category').notEmpty(),
     body('next_billing_date').isISO8601(),
+    body('currency').optional().isString().isLength({ min: 3, max: 8 })
   ],
   async (req, res) => {
     // Normalize billing_cycle to lowercase before validation
@@ -73,6 +74,7 @@ router.post(
         logo: req.body.logo || null,
         website: req.body.website || null,
         notes: req.body.notes || null,
+        currency: req.body.currency || 'USD',
       };
       await subModel.createSubscription(sub);
       res.status(201).json({ message: 'Subscription created', id: sub.id });
@@ -93,6 +95,7 @@ router.put(
     body('billing_cycle').isString(),
     body('category').notEmpty(),
     body('next_billing_date').isISO8601(),
+    body('currency').optional().isString().isLength({ min: 3, max: 8 })
   ],
   async (req, res) => {
     // Normalize billing_cycle to lowercase before validation
@@ -126,6 +129,7 @@ router.put(
         logo: req.body.logo || null,
         website: req.body.website || null,
         notes: req.body.notes || null,
+        currency: req.body.currency || 'USD',
       };
       await subModel.updateSubscription(req.params.id, req.user.id, sub);
       res.json({ message: 'Subscription updated' });
