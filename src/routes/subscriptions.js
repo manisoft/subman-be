@@ -48,13 +48,15 @@ router.post(
     // Now validate against allowed values
     const allowedCycles = ['weekly', 'biweekly', 'monthly', 'quarterly', 'yearly'];
     if (!allowedCycles.includes(req.body.billing_cycle)) {
-      return res.status(400).json({ errors: [{
-        type: 'field',
-        value: req.body.billing_cycle,
-        msg: 'Invalid value',
-        path: 'billing_cycle',
-        location: 'body',
-      }] });
+      return res.status(400).json({
+        errors: [{
+          type: 'field',
+          value: req.body.billing_cycle,
+          msg: 'Invalid value',
+          path: 'billing_cycle',
+          location: 'body',
+        }]
+      });
     }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -105,13 +107,15 @@ router.put(
     // Now validate against allowed values
     const allowedCycles = ['weekly', 'biweekly', 'monthly', 'quarterly', 'yearly'];
     if (!allowedCycles.includes(req.body.billing_cycle)) {
-      return res.status(400).json({ errors: [{
-        type: 'field',
-        value: req.body.billing_cycle,
-        msg: 'Invalid value',
-        path: 'billing_cycle',
-        location: 'body',
-      }] });
+      return res.status(400).json({
+        errors: [{
+          type: 'field',
+          value: req.body.billing_cycle,
+          msg: 'Invalid value',
+          path: 'billing_cycle',
+          location: 'body',
+        }]
+      });
     }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
