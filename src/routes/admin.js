@@ -123,4 +123,46 @@ router.get('/analytics/last-7-days-users', authenticateToken, requireAdmin, asyn
   }
 });
 
+// Broadcast custom push notification to all users with push subscriptions
+router.post('/push-broadcast', authenticateToken, requireAdmin, async (req, res) => {
+  const { title, body, url, icon } = req.body;
+  if (!title || !body) {
+    return res.status(400).json({ error: 'Title and body are required' });
+  }
+  try {
+    // Get all push subscriptions
+    const [subs] = await db.query('SELECT * FROM user_push_subscriptions');
+    if (!subs.length) return res.json({ status: 'ok', sent: 0 });
+    // Setup web-push
+    const webpush = require('web-push');
+    webpush.setVapidDetails(
+      'mailto:info@subman.org',
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+    let sent = 0;
+    const payload = JSON.stringify({
+      title,
+      body,
+      icon: icon || '/icon-192x192.png',
+      data: url ? { url } : undefined,
+      requireInteraction: true
+    });
+    for (const sub of subs) {
+      try {
+        await webpush.sendNotification({
+          endpoint: sub.endpoint,
+          keys: { p256dh: sub.p256dh, auth: sub.auth }
+        }, payload);
+        sent++;
+      } catch (err) {
+        // Ignore failed push (unsubscribed, etc.)
+      }
+    }
+    res.json({ status: 'ok', sent });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;
