@@ -13,9 +13,9 @@ webpush.setVapidDetails(
 );
 
 async function getUsersWithDueSubscriptions() {
-  // Find all subscriptions due today or tomorrow
+  // Find all subscriptions due today or tomorrow, with details for notification
   const [rows] = await pool.query(`
-    SELECT s.user_id, s.name, s.next_billing_date
+    SELECT s.user_id, s.id as subscription_id, s.name, s.price, s.logo, s.next_billing_date
     FROM subscriptions s
     WHERE s.next_billing_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
   `);
@@ -28,20 +28,41 @@ async function getUsersWithDueSubscriptions() {
   return userMap;
 }
 
-async function sendPushToUser(userId, message) {
-  const subs = await pushModel.getPushSubscriptionsByUser(userId);
+async function sendPushToUser(userId, subs) {
+  const pushSubs = await pushModel.getPushSubscriptionsByUser(userId);
   for (const sub of subs) {
-    try {
-      await webpush.sendNotification({
-        endpoint: sub.endpoint,
-        keys: {
-          p256dh: sub.p256dh,
-          auth: sub.auth
-        }
-      }, JSON.stringify(message));
-    } catch (err) {
-      // Ignore failed push (unsubscribed, etc.)
-      console.error('Push error:', err.message);
+    // Determine if due today or tomorrow
+    const diffDays = Math.floor((new Date(sub.next_billing_date) - new Date()) / (1000 * 60 * 60 * 24));
+    let title = '';
+    if (diffDays === 1) {
+      title = `Upcoming payment: ${sub.name}`;
+    } else if (diffDays === 0) {
+      title = `Payment due today: ${sub.name}`;
+    } else {
+      continue;
+    }
+    const payload = {
+      title,
+      body: `Amount: $${Number(sub.price).toFixed(2)}`,
+      icon: sub.logo || '/icon-192x192.png',
+      tag: `subman-payment-${sub.subscription_id}`,
+      data: { url: `/subscription/${sub.subscription_id}` },
+      badge: '/badge-72x72.png',
+      requireInteraction: true
+    };
+    for (const pushSub of pushSubs) {
+      try {
+        await webpush.sendNotification({
+          endpoint: pushSub.endpoint,
+          keys: {
+            p256dh: pushSub.p256dh,
+            auth: pushSub.auth
+          }
+        }, JSON.stringify(payload));
+      } catch (err) {
+        // Ignore failed push (unsubscribed, etc.)
+        console.error('Push error:', err.message);
+      }
     }
   }
 }
@@ -49,21 +70,16 @@ async function sendPushToUser(userId, message) {
 async function notifyDueSubscriptions() {
   const usersDue = await getUsersWithDueSubscriptions();
   for (const [userId, subs] of Object.entries(usersDue)) {
-    let body = '';
-    if (subs.length === 1) {
-      body = `Your subscription "${subs[0].name}" is due on ${subs[0].next_billing_date}`;
-    } else {
-      body = `You have ${subs.length} subscriptions due soon!`;
-    }
-    await sendPushToUser(userId, {
-      title: 'Subscription Due Reminder',
-      body,
-      url: 'https://subman.org/'
-    });
+    await sendPushToUser(userId, subs);
   }
   console.log('Due subscription notifications sent.');
 }
 
 if (require.main === module) {
-  notifyDueSubscriptions().then(() => process.exit(0));
+  notifyDueSubscriptions()
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error('Error sending due subscription notifications:', err);
+      process.exit(1);
+    });
 }
