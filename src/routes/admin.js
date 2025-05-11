@@ -141,6 +141,7 @@ router.post('/push-broadcast', authenticateToken, requireAdmin, async (req, res)
       process.env.VAPID_PRIVATE_KEY
     );
     let sent = 0;
+    const failed = [];
     const payload = JSON.stringify({
       title,
       body,
@@ -156,10 +157,10 @@ router.post('/push-broadcast', authenticateToken, requireAdmin, async (req, res)
         }, payload);
         sent++;
       } catch (err) {
-        // Ignore failed push (unsubscribed, etc.)
+        failed.push({ endpoint: sub.endpoint, error: err.message });
       }
     }
-    res.json({ status: 'ok', sent });
+    res.json({ status: 'ok', sent, failed });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
