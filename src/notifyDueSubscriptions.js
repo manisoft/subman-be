@@ -5,7 +5,6 @@ const webpush = require('web-push');
 const pool = require('./db');
 const pushModel = require('./models/pushSubscription');
 const subModel = require('./models/subscription');
-const cron = require('node-cron');
 
 webpush.setVapidDetails(
   'mailto:info@subman.org',
@@ -74,15 +73,6 @@ async function notifyDueSubscriptions() {
     await sendPushToUser(userId, subs);
   }
   console.log('Due subscription notifications sent.');
-}
-
-if (process.env.AZURE_WEBAPP_NAME) {
-  // Schedule to run every day at 11:00 AM server time
-  cron.schedule('0 11 * * *', () => {
-    notifyDueSubscriptions()
-      .then(() => console.log('Scheduled due subscription notifications sent.'))
-      .catch((err) => console.error('Error sending scheduled notifications:', err));
-  });
 }
 
 if (require.main === module) {
