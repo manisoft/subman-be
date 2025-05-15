@@ -120,6 +120,7 @@ router.post('/request-password-reset', [body('email').isEmail()], async (req, re
     });
     return res.json({ message: 'If this email is registered, you will receive a password reset link.' });
   } catch (e) {
+    console.error('Password reset request error:', e); // Log the real error for debugging
     return res.status(500).json({ error: 'Server error' });
   }
 });
