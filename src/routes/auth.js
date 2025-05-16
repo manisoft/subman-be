@@ -7,8 +7,16 @@ const { getUserByEmail, createUser } = require('../models/user');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const pool = require('../db');
+const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
+
+// Rate limiter for forgot password (per IP, 1 per hour)
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 1, // limit each IP to 1 request per windowMs
+  message: { error: 'Too many password reset requests. Please try again in 1 hour.' }
+});
 
 // Register
 router.post(
@@ -85,7 +93,7 @@ router.post(
 );
 
 // Password reset request
-router.post('/request-password-reset', [body('email').isEmail()], async (req, res) => {
+router.post('/request-password-reset', forgotPasswordLimiter, [body('email').isEmail()], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
