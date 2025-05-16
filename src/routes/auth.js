@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const { getUserByEmail, createUser } = require('../models/user');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const pool = require('../db');
 
 const router = express.Router();
 
