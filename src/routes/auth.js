@@ -94,7 +94,7 @@ router.post('/request-password-reset', [body('email').isEmail()], async (req, re
   try {
     const user = await getUserByEmail(email);
     // Always respond with success to avoid leaking user existence
-    if (!user) return res.json({ message: 'If this email is registered, you will receive a password reset link.' });
+    if (!user) return res.json({ message: 'If this email is registered, you will receive a password reset link. Check your Junk folder if it is not in your Inbox' });
 
     // Generate token and expiry
     const token = crypto.randomBytes(32).toString('hex');
