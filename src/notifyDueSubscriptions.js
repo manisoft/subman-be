@@ -15,9 +15,10 @@ webpush.setVapidDetails(
 async function getUsersWithDueSubscriptions() {
   // Find all subscriptions due today or tomorrow, with details for notification
   const [rows] = await pool.query(`
-    SELECT s.user_id, s.id as subscription_id, s.name, s.price, s.logo, s.next_billing_date
+    SELECT s.user_id, s.id as subscription_id, s.name, s.price, s.logo, s.next_billing_date, s.auto_renew
     FROM subscriptions s
     WHERE s.next_billing_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+      AND (s.auto_renew IS NULL OR s.auto_renew = 0)
   `);
   // Group by user
   const userMap = {};

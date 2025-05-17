@@ -77,6 +77,7 @@ router.post(
         website: req.body.website || null,
         notes: req.body.notes || null,
         currency: req.body.currency || 'USD',
+        auto_renew: req.body.auto_renew ? 1 : 0
       };
       await subModel.createSubscription(sub);
       res.status(201).json({ message: 'Subscription created', id: sub.id });
@@ -134,6 +135,7 @@ router.put(
         website: req.body.website || null,
         notes: req.body.notes || null,
         currency: req.body.currency || 'USD',
+        auto_renew: req.body.auto_renew ? 1 : 0
       };
       await subModel.updateSubscription(req.params.id, req.user.id, sub);
       res.json({ message: 'Subscription updated' });
