@@ -103,6 +103,7 @@ const categoriesRoutes = require('./routes/categories');
 const pagesRoutes = require('./routes/pages');
 const versionRoutes = require('./routes/version');
 const adminRoutes = require('./routes/admin');
+const sendFeedbackRoute = require('./routes/sendFeedback');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
@@ -113,6 +114,7 @@ app.use('/api/categories', categoriesRoutes);
 app.use('/api/pages', pagesRoutes);
 app.use('/api/version', versionRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/send-feedback', sendFeedbackRoute);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
