@@ -5,6 +5,7 @@ const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const userModel = require('../models/user');
 const versionModel = require('../models/version');
 const db = require('../db');
+const feedbackModel = require('../models/feedback');
 
 // Import the notification logic
 const notifyDueSubscriptions = require('../notifyDueSubscriptions');
@@ -163,6 +164,19 @@ router.post('/push-broadcast', authenticateToken, requireAdmin, async (req, res)
     res.json({ status: 'ok', sent, failed });
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+// Get paginated feedback (admin only)
+router.get('/feedback', authenticateToken, requireAdmin, async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 50;
+  const search = req.query.q || '';
+  try {
+    const { feedback, total } = await feedbackModel.getFeedbackPaginated({ page, limit, search });
+    res.json({ feedback, total });
+  } catch (e) {
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
