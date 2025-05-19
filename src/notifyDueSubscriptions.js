@@ -29,15 +29,31 @@ async function getUsersWithDueSubscriptions() {
   return userMap;
 }
 
+function isSameLocalDay(dateA, dateB) {
+  return dateA.getFullYear() === dateB.getFullYear() &&
+    dateA.getMonth() === dateB.getMonth() &&
+    dateA.getDate() === dateB.getDate();
+}
+
+function isOneDayBeforeLocal(dateA, dateB) {
+  // dateA is one day before dateB (local time)
+  const a = new Date(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
+  const b = new Date(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
+  const diff = (b - a) / (1000 * 60 * 60 * 24);
+  return diff === 1;
+}
+
 async function sendPushToUser(userId, subs) {
   const pushSubs = await pushModel.getPushSubscriptionsByUser(userId);
+  const now = new Date();
   for (const sub of subs) {
-    // Determine if due today or tomorrow
-    const diffDays = Math.floor((new Date(sub.next_billing_date) - new Date()) / (1000 * 60 * 60 * 24));
+    // Parse next_billing_date as local date (ignore time zone)
+    const [yearStr, monthStr, dayStr] = sub.next_billing_date.split('-');
+    const dueDate = new Date(Number(yearStr), Number(monthStr) - 1, Number(dayStr));
     let title = '';
-    if (diffDays === 1) {
+    if (isOneDayBeforeLocal(now, dueDate)) {
       title = `Upcoming payment: ${sub.name}`;
-    } else if (diffDays === 0) {
+    } else if (isSameLocalDay(now, dueDate)) {
       title = `Payment due today: ${sub.name}`;
     } else {
       continue;
