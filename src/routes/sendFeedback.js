@@ -4,14 +4,13 @@ const { saveFeedback } = require('../models/feedback');
 
 // POST /api/send-feedback
 router.post('/', async (req, res) => {
-    const { title, message } = req.body;
-    const userId = req.user ? req.user.id : null;
+    const { title, message, userId, userEmail } = req.body;
     if (!title || !message) {
         return res.status(400).json({ error: 'Missing title or message' });
     }
     try {
         const createdAt = new Date();
-        await saveFeedback({ userId, title, message, createdAt });
+        await saveFeedback({ userId, userEmail, title, message, createdAt });
         res.json({ success: true });
     } catch (err) {
         console.error('Feedback DB error:', err);
