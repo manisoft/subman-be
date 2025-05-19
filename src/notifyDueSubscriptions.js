@@ -48,7 +48,16 @@ async function sendPushToUser(userId, subs) {
   const now = new Date();
   for (const sub of subs) {
     // Parse next_billing_date as local date (ignore time zone)
-    const [yearStr, monthStr, dayStr] = sub.next_billing_date.split('-');
+    let yearStr, monthStr, dayStr;
+    if (typeof sub.next_billing_date === 'string') {
+      [yearStr, monthStr, dayStr] = sub.next_billing_date.split('-');
+    } else if (sub.next_billing_date instanceof Date) {
+      yearStr = sub.next_billing_date.getFullYear();
+      monthStr = sub.next_billing_date.getMonth() + 1;
+      dayStr = sub.next_billing_date.getDate();
+    } else {
+      continue; // skip if invalid
+    }
     const dueDate = new Date(Number(yearStr), Number(monthStr) - 1, Number(dayStr));
     let title = '';
     if (isOneDayBeforeLocal(now, dueDate)) {
